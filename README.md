@@ -145,6 +145,41 @@ The video walks through ingesting a real CT report, guideline retrieval with cit
 
 ---
 
+## Examples
+
+Check out the `examples/` directory for hands-on demonstrations:
+
+### Ollama (Local LLM)
+Run AuDRA-Rad with local Llama 3.1 8B via Ollama:
+```bash
+# Quick test
+python examples/ollama/test_ollama_simple.py
+
+# Full radiology analysis suite
+python examples/ollama/test_radiology_analysis.py
+
+# Interactive notebook
+jupyter notebook examples/ollama/ollama_radiology_analysis.ipynb
+```
+
+See [`examples/ollama/README.md`](examples/ollama/README.md) for setup and detailed usage.
+
+### MIMIC-IV Exploration
+Analyze real-world radiology reports from MIMIC-IV:
+```bash
+jupyter notebook examples/mimic_exploration/explore_mimic_data.ipynb
+```
+
+See [`examples/mimic_exploration/README.md`](examples/mimic_exploration/README.md) for data access and analysis examples.
+
+### Agent Demonstrations
+Explore the original agent notebooks:
+- [`notebooks/01_explore_reports.ipynb`](notebooks/01_explore_reports.ipynb) - Report exploration
+- [`notebooks/02_test_retrieval.ipynb`](notebooks/02_test_retrieval.ipynb) - Guideline retrieval
+- [`notebooks/03_agent_demo.ipynb`](notebooks/03_agent_demo.ipynb) - Full agent workflow
+
+---
+
 ## Testing
 
 ```bash

@@ -1,6 +1,6 @@
-﻿# AuDRA-Rad Deployment Guide
+# AuDRA-Rad Deployment Guide
 
-Use this runbook to stand up AuDRA-Rad on Amazon EKS with NVIDIA NIM inference services. Follow the sections in order and capture screenshots for status reports (add them under `assets/screenshots/`).
+Use this runbook to deploy AuDRA-Rad on cloud platforms (AWS, Azure, GCP) or locally with Docker. Follow the sections in order and capture screenshots for status reports (add them under `assets/screenshots/`).
 
 ---
 
@@ -88,29 +88,28 @@ aws opensearchserverless create-security-policy \
 ### 6. Tag resources and set budgets
 
 ```bash
-aws budgets create-budget --account-id $AWS_ACCOUNT_ID --budget file://docs/budgets/hackathon_budget.json
+aws budgets create-budget --account-id $AWS_ACCOUNT_ID --budget file://docs/budgets/budget.json
 ```
 
-- Tag cluster nodes and OpenSearch with `CostCenter=Hackathon` for tracking.
+- Tag cluster nodes and OpenSearch with appropriate cost center tags for tracking.
 
 ---
 
-## NVIDIA NIM Setup
+## LLM Service Setup
 
-1. **Create or verify your build.nvidia.com account.** Request NIM access via the hackathon portal.
-2. **Generate an API key:** `https://build.nvidia.com/api-keys` -> store in your password manager.
-3. **Accept container registry terms** on `https://ngc.nvidia.com`. Run:
-   ```bash
-   docker login nvcr.io
-   Username: $oauthtoken
-   Password: <NVIDIA_API_KEY>
-   ```
-4. **Whitelabel the NIM endpoints** you plan to use (e.g., `nvidia/llama-3.1-nemotron-70b-instruct`).
-5. **Update secrets:** add `NVIDIA_API_KEY`, `NVIDIA_NIM_BASE_URL`, and target model IDs to `.env`.
+### Cloud-based LLMs
+1. **Choose your LLM provider** (OpenAI, Anthropic, Azure OpenAI, etc.)
+2. **Generate an API key** from your provider's console
+3. **Update secrets:** add `LLM_API_KEY`, `LLM_ENDPOINT`, and model configuration to `.env`
+
+### Local Ollama Setup
+1. **Install Ollama** from `https://ollama.ai`
+2. **Pull your model:** `ollama pull llama3.1:8b`
+3. **Update .env:** set `LLM_ENDPOINT=http://localhost:11434`
 
 Troubleshooting:
-- `denied: requested access...` -> ensure your account has been granted NIM inference entitlement.
-- `unauthorized: authentication required` -> refresh API key; keys expire after 90 days.
+- Authentication errors -> verify API key is valid and has not expired
+- Connection refused -> ensure the LLM service endpoint is accessible from your deployment
 
 ---
 
@@ -330,13 +329,13 @@ aws s3 sync backups/ s3://audra-backups/k8s/
 
 | Issue | Symptom | Resolution |
 |-------|---------|------------|
-| IAM policy missing | ALB controller Pod `AccessDenied` | Re-run IRSA creation, attach `AWSLoadBalancerControllerIAMPolicy` |
-| GPU scheduling | Pods Pending with `nvidia.com/gpu` | Scale `gpu-workers`, confirm device plugin logs show discoveries |
-| OpenSearch auth | 403 response from vector store | Update access policy to include node IAM role and Lambda writers |
-| NIM latency | API requests >10s | Enable model warmup, increase replicas, or pin to regional endpoint |
-| Budget overrun | AWS console alert | Scale nodegroups to zero, stop OpenSearch, and delete ALB |
+| IAM/RBAC policy missing | Ingress controller Pod `AccessDenied` | Re-verify service account permissions and IAM/RBAC bindings |
+| GPU scheduling | Pods Pending with GPU requirements | Scale GPU node pools, confirm device plugin is running |
+| Vector database auth | 403 response from vector store | Update access policy to include service accounts and compute roles |
+| LLM latency | API requests >10s | Check endpoint health, increase replicas, or optimize model configuration |
+| Budget overrun | Cloud console alert | Scale down node pools, stop non-essential services |
 
-For unresolved issues escalate to the platform team: `support@audra-rad.dev` (include cluster name, namespace, and recent pod logs).
+For unresolved issues, check application logs and cloud provider documentation for your specific platform.
 
 ---
 

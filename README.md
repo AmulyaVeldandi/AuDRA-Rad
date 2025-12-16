@@ -6,17 +6,16 @@ Closing the deadliest gap in radiology workflows by turning unstructured reports
 
 ## Overview
 
-AuDRA-Rad combines NVIDIA NIM foundation models, retrieval-augmented generation (RAG), and FHIR-compliant integrations to extract critical findings, match the right guideline, and create follow-up orders inside the EHR. Hospitals can increase follow-up compliance, reduce liability, and deliver timely cancer care.
+AuDRA-Rad combines advanced language models (cloud-based or local via Ollama), retrieval-augmented generation (RAG), and FHIR-compliant integrations to extract critical findings, match the right guideline, and create follow-up orders inside the EHR. Hospitals can increase follow-up compliance, reduce liability, and deliver timely cancer care.
 
 ---
 
 ## Prerequisites
 
-- AWS account with permissions to create and manage EKS, ECR, VPC, IAM, and OpenSearch resources
-- Local tooling: `kubectl`, `eksctl`, `docker`, `awscli`, `helm`, `python3`
-- NVIDIA NIM access via [build.nvidia.com](https://build.nvidia.com) with API keys and registry entitlement
-- Hackathon-issued $100 AWS credits (track spend carefully)
-- Optional: `terraform` or AWS CDK if you prefer infrastructure as code
+- Cloud provider account (AWS, Azure, GCP) or local setup with Docker
+- Local tooling: `kubectl`, `docker`, `python3`
+- LLM access: Either cloud-based API keys or Ollama for local deployment
+- Optional: `terraform` or infrastructure-as-code tools for cloud deployments
 
 ---
 
@@ -35,7 +34,6 @@ AuDRA-Rad combines NVIDIA NIM foundation models, retrieval-augmented generation 
    docker-compose up -d  # Start local OpenSearch
    python scripts/index_guidelines.py --local
    python scripts/seed_sample_data.py --dry-run  # Preview demo payloads
-   python scripts/test_nim_connection.py --embeddings --llm
    
    # Run locally
    uvicorn src.api.app:app --reload
@@ -46,7 +44,7 @@ AuDRA-Rad combines NVIDIA NIM foundation models, retrieval-augmented generation 
      -d @data/sample_reports/fhir_chest_ct_ggo.json
 ```
 
-- The `.env` file stores NIM endpoints, API keys, and AWS credentials consumed by the RAG pipeline.
+- The `.env` file stores LLM endpoints, API keys, and cloud credentials consumed by the RAG pipeline.
 - Local OpenSearch runs via `docker-compose` with default ports (see `docker-compose.yml` for overrides).
 
 ---
@@ -58,47 +56,45 @@ Populate `.env` (or your shell) with the values below before running the CLI hel
 | Variable | Purpose | Required | Example |
 | --- | --- | --- | --- |
 | `ENVIRONMENT` | Controls logging format & env validation | always | `dev` |
-| `NIM_LLM_ENDPOINT` | Nemotron NIM base URL | for LLM features | `https://integrate.api.nvidia.com/v1` |
-| `NIM_LLM_API_KEY` | Nemotron API key | for LLM features | `nvai-...` |
-| `NIM_EMBEDDING_ENDPOINT` | NV-Embed base URL | for guideline indexing | `https://integrate.api.nvidia.com/v1` |
-| `NIM_EMBEDDING_API_KEY` | NV-Embed API key | for guideline indexing | `nvai-...` |
+| `LLM_ENDPOINT` | LLM API base URL (cloud or Ollama) | for LLM features | `https://api.openai.com/v1` or `http://localhost:11434` |
+| `LLM_API_KEY` | API key for cloud LLM service | for cloud LLMs | `sk-...` |
+| `EMBEDDING_ENDPOINT` | Embedding model base URL | for guideline indexing | Cloud or local endpoint |
+| `EMBEDDING_API_KEY` | Embedding API key | for cloud embeddings | API key value |
 | `OPENSEARCH_ENDPOINT` | OpenSearch endpoint URL | staging/prod or custom local port | `https://search-your-domain...` |
-| `AWS_REGION` | Region for OpenSearch Serverless signing | staging/prod | `us-west-2` |
+| `CLOUD_REGION` | Cloud region for services | staging/prod | `us-west-2` |
 
-If `ENVIRONMENT` is set to `staging` or `prod`, the application enforces that all NIM and OpenSearch variables are present. For local development with `docker-compose`, you can leave `OPENSEARCH_ENDPOINT` unset to use `http://localhost:9200`.
+If `ENVIRONMENT` is set to `staging` or `prod`, the application enforces that all LLM and OpenSearch variables are present. For local development with `docker-compose`, you can leave `OPENSEARCH_ENDPOINT` unset to use `http://localhost:9200`.
 
 ---
 
-## Deploy to AWS EKS
+## Cloud Deployment
 
 1. **Confirm prerequisites**
-   - AWS CLI configured (`aws sts get-caller-identity`)
-   - `eksctl`, `kubectl`, `helm`, and `docker` installed
-   - NVIDIA NGC/NIM registry access verified (`docker login nvcr.io`)
+   - Cloud CLI configured (AWS, Azure, or GCP)
+   - `kubectl`, `helm`, and `docker` installed
+   - Container registry access configured
 2. **Provision infrastructure**
-   - Create EKS cluster and GPU-capable node group
-   - Configure IAM roles, OpenSearch Serverless collection, and ECR repository
-   - Allocate an ACM certificate and Route 53 hosted zone if exposing a public endpoint
+   - Create Kubernetes cluster
+   - Configure IAM/RBAC roles, vector database, and container registry
+   - Set up ingress and certificates for public endpoints
 3. **Build and ship the container**
-   - `docker build -t <account>.dkr.ecr.<region>.amazonaws.com/audra-rad:<tag> .`
-   - `aws ecr get-login-password | docker login`
-   - `docker push` to ECR
+   - `docker build -t <registry>/audra-rad:<tag> .`
+   - Authenticate with your container registry
+   - `docker push` to registry
 4. **Configure Kubernetes addons**
-   - Install AWS VPC CNI, Cluster Autoscaler, metrics server, and ALB Ingress Controller
-   - Apply GPU device plugin DaemonSet (`kubectl apply -f nvidia-device-plugin.yml`)
+   - Install ingress controller, metrics server, and autoscaler
+   - Apply GPU device plugins if using GPU nodes
 5. **Deploy the application**
    - Apply secrets (`kubectl create secret generic audra-env --from-env-file=.env`)
    - Apply manifests in `deployment/kubernetes` (`kubectl apply -f deployment/kubernetes/`)
 6. **Validate**
    - `kubectl get pods -n audra` ensures workloads are ready
    - `kubectl logs deploy/audra-api -n audra` checks application startup
-   - Hit the ALB endpoint `/healthz` and `/docs`
+   - Hit the ingress endpoint `/healthz` and `/docs`
 
-**Cost estimate:** ~\$3/hour for a single g5.xlarge node, OpenSearch Serverless collection, and supporting services. Expect to burn through hackathon credits in ~30 hours of continuous runtime.
+**Budget tips:** Use autoscaling, pause non-production environments when idle, and monitor cloud costs regularly.
 
-**Budget tips:** pause node groups overnight, delete unused ALBs, and stop OpenSearch collections when idle.
-
-See `docs/DEPLOYMENT.md` for copy-paste commands, infrastructure diagrams, and troubleshooting screenshots.
+See `docs/DEPLOYMENT.md` for detailed deployment instructions and troubleshooting guidance.
 
 ---
 
@@ -107,11 +103,11 @@ See `docs/DEPLOYMENT.md` for copy-paste commands, infrastructure diagrams, and t
 ![Architecture Diagram](assets/architecture_diagram.png)
 
 - **Radiology ingestion**: FHIR-compatible parser normalizes raw reports into structured findings.
-- **Guideline retrieval**: OpenSearch Serverless stores embedded medical guidelines indexed via the RAG pipeline.
-- **Reasoning engine**: NVIDIA Nemotron NIM evaluates findings against the guideline corpus to generate recommendations.
+- **Guideline retrieval**: Vector database stores embedded medical guidelines indexed via the RAG pipeline.
+- **Reasoning engine**: LLM service (cloud or Ollama) evaluates findings against the guideline corpus to generate recommendations.
 - **Validation & safety**: Custom validators enforce guardrails, flag high-risk edge cases, and log decisions.
 - **EHR integration**: FastAPI service exposes REST endpoints and pushes tasks/orders back to hospital systems.
-- **Observability**: CloudWatch metrics, structured logs, and AWS X-Ray traces support operations at scale.
+- **Observability**: Structured logs and monitoring support operations at scale.
 
 More system internals live in `docs/ARCHITECTURE.md`.
 
@@ -194,11 +190,10 @@ pytest tests/ -v
 
 ## CLI Utilities
 
-- `scripts/index_guidelines.py` - chunk guideline markdown files, call NV-Embed, and upsert vectors. Flags:
+- `scripts/index_guidelines.py` - chunk guideline markdown files, generate embeddings, and upsert vectors. Flags:
   - `--local` to force `http://localhost:9200`
   - `--drop-existing` to recreate the index
 - `scripts/seed_sample_data.py` - generate demo ServiceRequests for the bundled sample DiagnosticReports. Defaults to the mock EHR; pass `--remote --ehr-base-url=https://your-ehr` to hit a live endpoint.
-- `scripts/test_nim_connection.py` - smoke test NV-Embed and Nemotron connectivity. Disable individual checks with `--no-embeddings` or `--no-llm`.
 
 ---
 
@@ -206,34 +201,32 @@ pytest tests/ -v
 
 - **Monitor usage**
   - `kubectl top nodes -n kube-system` (requires metrics-server)
-  - `aws cloudwatch get-metric-statistics --namespace AWS/EKS --metric-name node_cpu_utilization ...`
+  - Use cloud provider monitoring tools to track resource utilization
 - **Pause infrastructure**
-  - `eksctl scale nodegroup --cluster audra --name gpu-workers --nodes 0`
-  - `aws opensearchserverless delete-collection --id audra-guidelines` (recreate when needed)
+  - Scale down node groups when not in use
+  - Pause or delete vector database collections during idle periods
 - **Set alerts**
-  - Create a CloudWatch billing alarm at \$80 to preserve buffer
-  - Enable AWS Budgets email + SNS notifications for the hackathon credits
+  - Create billing alarms in your cloud provider console
+  - Enable budget notifications and spending alerts
 
-Always delete the cluster (`eksctl delete cluster --name audra`) after demos to avoid surprise charges.
+Always clean up unused resources to avoid unnecessary charges.
 
 ---
 
 ## Troubleshooting
 
-- **Image pull errors**: Run `docker login nvcr.io` and `aws ecr get-login-password` before `kubectl apply`. Ensure the node IAM role has `AmazonEC2ContainerRegistryReadOnly`.
-- **Pods stuck in Init**: Confirm GPU nodes are present (`kubectl get nodes -l nvidia.com/gpu.present=true`) and the NVIDIA device plugin DaemonSet is running.
-- **OpenSearch connection refused**: Verify security group rules, correct endpoint URL in `.env`, and that the collection is started.
-- **Ingress 502/504**: Check ALB target group health, confirm FastAPI service responds at `/healthz`, and inspect `kubectl logs deploy/audra-api -n audra`.
-- **View logs**: `kubectl logs -n audra deploy/audra-api -f`, `kubectl logs -n kube-system ds/nvidia-device-plugin-daemonset`, and `aws logs tail /aws/eks/audra/cluster --follow`.
-
-Need help? Reach the team at `support@audra-rad.dev`.
+- **Image pull errors**: Authenticate with your container registry before `kubectl apply`. Ensure nodes have appropriate permissions to pull images.
+- **Pods stuck in Init**: Check node availability and ensure required device plugins are running if using specialized hardware.
+- **Vector database connection refused**: Verify network rules, correct endpoint URL in `.env`, and that the service is running.
+- **Ingress 502/504**: Check ingress controller health, confirm FastAPI service responds at `/healthz`, and inspect `kubectl logs deploy/audra-api -n audra`.
+- **View logs**: `kubectl logs -n audra deploy/audra-api -f` for application logs.
 
 ---
 
 ## License & Acknowledgments
 
 - Licensed under the [MIT License](LICENSE).
-- Built with support from NVIDIA NIM, AWS credit program, and the open radiology community.
+- Built with support from the open radiology and medical AI community.
 - Medical guideline content courtesy of the Fleischner Society, ACR, and broader evidence-based medicine contributors.
 
 ---
@@ -241,10 +234,6 @@ Need help? Reach the team at `support@audra-rad.dev`.
 ## Additional Resources
 
 - `docs/ARCHITECTURE.md` - component deep dive, sequence diagrams, and data contracts
-- `docs/DEPLOYMENT.md` - detailed AWS setup with screenshots and IaC snippets
+- `docs/DEPLOYMENT.md` - detailed deployment setup with configuration examples
 - `data/guidelines/` - curated guideline corpus (Fleischner 2017, more coming)
 - `tests/` - unit and integration tests covering parsers, validators, and end-to-end flows
-
----
-
-**Built for the NVIDIA + AWS Agentic AI Hackathon 2025 - every finding deserves follow-through.**

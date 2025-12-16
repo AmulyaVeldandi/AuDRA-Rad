@@ -3,7 +3,7 @@ from __future__ import annotations
 """Configuration helpers backed by environment variables and .env files."""
 
 from functools import lru_cache
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import AnyHttpUrl, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -31,10 +31,18 @@ class Settings(BaseSettings):
     ENVIRONMENT: Literal["dev", "staging", "prod"] = Field(default="dev")
     LOG_LEVEL: str = Field(default="INFO")
 
+    # LLM Backend selection
+    LLM_BACKEND: Literal["nim", "ollama"] = Field(default="nim")
+
+    # NIM configuration
     NIM_LLM_ENDPOINT: AnyHttpUrl = Field(default="http://nim-llm:8000/v1")
     NIM_EMBEDDING_ENDPOINT: AnyHttpUrl = Field(default="http://nim-embedding:8000/v1")
     NIM_LLM_API_KEY: SecretStr | None = Field(default=None)
     NIM_EMBEDDING_API_KEY: SecretStr | None = Field(default=None)
+
+    # Ollama configuration
+    OLLAMA_BASE_URL: str = Field(default="http://localhost:11434")
+    OLLAMA_MODEL_NAME: str = Field(default="llama3.2:latest")
 
     AWS_REGION: str | None = Field(default=None)
     OPENSEARCH_ENDPOINT: AnyHttpUrl | None = Field(default=None)

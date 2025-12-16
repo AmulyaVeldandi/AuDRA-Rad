@@ -27,6 +27,7 @@ from src.parsers.report_parser import ReportParser
 from src.services.ehr_client import EHRClient
 from src.services.nim_embeddings import EmbeddingClient
 from src.services.nim_llm import NemotronClient, NIMServiceError
+from src.services.ollama_llm import OllamaClient
 from src.services.vector_store import VectorStore
 from src.utils.logger import get_logger
 
@@ -53,9 +54,9 @@ class AuDRAAgent:
 
     def __init__(
         self,
-        llm_client: NemotronClient,
-        embedding_client: EmbeddingClient,
-        vector_store: VectorStore,
+        llm_client: NemotronClient | OllamaClient,
+        embedding_client: Optional[EmbeddingClient],
+        vector_store: Optional[VectorStore],
         ehr_client: EHRClient,
     ) -> None:
         self._llm = llm_client
@@ -64,7 +65,14 @@ class AuDRAAgent:
         self._ehr_client = ehr_client
 
         self._parser = ReportParser()
-        self._retriever = GuidelineRetriever(embedding_client, vector_store)
+
+        # Only initialize retriever if we have embeddings and vector store
+        if embedding_client and vector_store:
+            self._retriever = GuidelineRetriever(embedding_client, vector_store)
+        else:
+            self._retriever = None
+            _LOGGER.info("Running without guideline retrieval (no embedding/vector store).")
+
         self._matcher = RecommendationMatcher(llm_client)
         self._task_generator = TaskGenerator()
 

@@ -83,7 +83,7 @@ class ToolDependencies:
     """Container for tool-level dependencies."""
 
     parser: ReportParser
-    retriever: GuidelineRetriever
+    retriever: Optional[GuidelineRetriever]
     matcher: RecommendationMatcher
     ehr_client: EHRClient
     task_generator: TaskGenerator
@@ -200,6 +200,15 @@ def retrieve_guidelines_tool(
         "step": "retrieve_guidelines",
         "finding_id": finding.get("id"),
     }
+
+    # If no retriever available (Ollama mode), return empty guidelines
+    if deps.retriever is None:
+        _LOGGER.info(
+            "Guideline retrieval skipped (no retriever configured).",
+            extra={"context": correlation_context},
+        )
+        return state, []
+
     try:
         chunks = deps.retriever.retrieve(finding, top_k=5)
         chunk_dicts = [_convert_guideline(chunk, finding) for chunk in chunks]

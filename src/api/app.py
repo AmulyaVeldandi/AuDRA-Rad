@@ -23,6 +23,7 @@ from src.api.routes import register_exception_handlers, router
 from src.services.ehr_client import EHRClient
 from src.services.nim_embeddings import EmbeddingClient, NIMServiceError as EmbeddingServiceError
 from src.services.nim_llm import NIMServiceError, NemotronClient
+from src.services.ollama_llm import OllamaClient, OllamaServiceError
 from src.services.vector_store import VectorStore, VectorStoreError
 from src.utils.config import get_settings
 from src.utils.logger import clear_correlation_id, get_logger, set_correlation_id
@@ -69,42 +70,63 @@ def _middleware_cors(app: FastAPI) -> None:
 
 def _initialise_services(app: FastAPI) -> None:
     logger.info("Starting AuDRA-Rad API services...")
-    llm_client: Optional[NemotronClient] = None
+    llm_client: Optional[NemotronClient | OllamaClient] = None
     embedding_client: Optional[EmbeddingClient] = None
     vector_store: Optional[VectorStore] = None
     ehr_client: Optional[EHRClient] = None
 
-    try:
-        llm_client = NemotronClient()
-        logger.info("Nemotron client initialised.")
-    except NIMServiceError as exc:
-        logger.error(
-            "Nemotron client initialisation failed.",
-            extra={"context": {"error": str(exc)}},
-        )
+    # Initialize LLM client based on configuration
+    if SETTINGS.LLM_BACKEND == "ollama":
+        try:
+            llm_client = OllamaClient(
+                model_name=SETTINGS.OLLAMA_MODEL_NAME,
+                base_url=SETTINGS.OLLAMA_BASE_URL
+            )
+            logger.info(f"Ollama client initialised (model={SETTINGS.OLLAMA_MODEL_NAME}).")
+        except OllamaServiceError as exc:
+            logger.error(
+                "Ollama client initialisation failed.",
+                extra={"context": {"error": str(exc)}},
+            )
+    else:
+        try:
+            llm_client = NemotronClient()
+            logger.info("Nemotron client initialised.")
+        except NIMServiceError as exc:
+            logger.error(
+                "Nemotron client initialisation failed.",
+                extra={"context": {"error": str(exc)}},
+            )
 
-    try:
-        embedding_client = EmbeddingClient()
-        logger.info("Embedding client initialised.")
-    except (EmbeddingServiceError, NIMServiceError) as exc:
-        logger.error(
-            "Embedding client initialisation failed.",
-            extra={"context": {"error": str(exc)}},
-        )
+    # When using Ollama, embeddings and vector store are optional
+    # Ollama can work standalone without RAG-based guideline retrieval
+    if SETTINGS.LLM_BACKEND == "ollama":
+        logger.info("Ollama mode: Embeddings and vector store are optional.")
+        # Skip embedding and vector store initialization for Ollama
+    else:
+        # For NIM backend, initialize embeddings and vector store
+        try:
+            embedding_client = EmbeddingClient()
+            logger.info("Embedding client initialised.")
+        except (EmbeddingServiceError, NIMServiceError) as exc:
+            logger.error(
+                "Embedding client initialisation failed.",
+                extra={"context": {"error": str(exc)}},
+            )
 
-    try:
-        vector_store = VectorStore(index_name="medical_guidelines")
-        logger.info("Vector store initialised.")
-    except VectorStoreError as exc:
-        logger.error(
-            "Vector store initialisation failed.",
-            extra={"context": {"error": str(exc)}},
-        )
-    except Exception as exc:  # pragma: no cover - defensive
-        logger.error(
-            "Unexpected error initialising vector store.",
-            extra={"context": {"error": str(exc)}},
-        )
+        try:
+            vector_store = VectorStore(index_name="medical_guidelines")
+            logger.info("Vector store initialised.")
+        except VectorStoreError as exc:
+            logger.error(
+                "Vector store initialisation failed.",
+                extra={"context": {"error": str(exc)}},
+            )
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.error(
+                "Unexpected error initialising vector store.",
+                extra={"context": {"error": str(exc)}},
+            )
 
     try:
         ehr_client = EHRClient(use_mock=True)
@@ -115,7 +137,14 @@ def _initialise_services(app: FastAPI) -> None:
             extra={"context": {"error": str(exc)}},
         )
 
-    if llm_client and embedding_client and vector_store and ehr_client:
+    # For Ollama mode, only require llm_client and ehr_client
+    # For NIM mode, require all services
+    if SETTINGS.LLM_BACKEND == "ollama":
+        required_services_met = llm_client and ehr_client
+    else:
+        required_services_met = llm_client and embedding_client and vector_store and ehr_client
+
+    if required_services_met:
         app.state.agent = AuDRAAgent(
             llm_client=llm_client,
             embedding_client=embedding_client,

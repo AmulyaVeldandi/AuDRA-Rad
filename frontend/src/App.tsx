@@ -73,9 +73,12 @@ export const App: React.FC = () => {
     <div className="app">
       <HealthIndicator healthData={mapHealthResponse(healthData)} isLoading={healthLoading} />
       <header className="app__header">
-        <h1>AuDRA-Rad Dashboard</h1>
-        <p className="text-muted">
-          Submit radiology reports for guideline-driven analysis and track generated follow-up actions.
+        <h1>🩺 AuDRA-Rad</h1>
+        <p className="subtitle">
+          Autonomous Radiology Follow-up Assistant
+        </p>
+        <p className="text-muted" style={{ marginTop: '8px', fontSize: '0.95rem' }}>
+          Transform radiology findings into actionable follow-up care with AI-powered guideline matching and automated task generation.
         </p>
       </header>
 

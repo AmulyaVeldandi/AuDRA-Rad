@@ -6,6 +6,20 @@ import types
 from typing import Any, Dict
 
 import pytest
+from fastapi.testclient import TestClient
+
+from src.agent.orchestrator import ProcessingResult
+from src.agent.state import AgentState, StateManager
+from src.api import app as app_module
+from src.api.app import create_app
+from src.api.routes import (
+    get_agent,
+    limiter,
+    _build_finding,
+    _build_tasks,
+    _clamp_confidence,
+    health_check_endpoint,
+)
 
 if "openai" not in sys.modules:
     openai_module = types.ModuleType("openai")
@@ -188,16 +202,14 @@ if "slowapi.middleware" not in sys.modules:
     middleware_module.SlowAPIMiddleware = _DummySlowAPIMiddleware
     sys.modules["slowapi.middleware"] = middleware_module
 
-from src.api import app as app_module
-from src.api.app import create_app
-from src.api.models import RecommendationResponse
-from src.api.routes import (
-    _build_finding,
-    _build_tasks,
-    _clamp_confidence,
-    health_check_endpoint,
-)
+if "slowapi.util" not in sys.modules:
+    util_module = types.ModuleType("slowapi.util")
 
+    def _dummy_remote_address(request: Any) -> str:
+        return "test-client"
+
+    util_module.get_remote_address = _dummy_remote_address
+    sys.modules["slowapi.util"] = util_module
 
 class _DummyRequest:
     def __init__(self, app: Any) -> None:
@@ -235,42 +247,34 @@ def test_build_finding_normalises_characteristics() -> None:
     assert finding.confidence == pytest.approx(0.75)
 
 
-def test_build_tasks_generates_schedule_from_recommendations() -> None:
-    today = date.today()
-    orders = ["ORD-1", "ORD-2"]
-    recommendations = [
-        RecommendationResponse(
-            recommendation_id="rec-1",
-            follow_up_type="CT Chest",
-            timeframe_months=3,
-            urgency="urgent",
-            reasoning="Guideline matched.",
-            citation="Fleischner 2017",
-            confidence=0.9,
-        ),
-        RecommendationResponse(
-            recommendation_id="rec-2",
-            follow_up_type="MRI Abdomen",
-            timeframe_months=None,
-            urgency="routine",
-            reasoning="Incidental finding.",
-            citation="ACR 2017",
-            confidence=0.8,
-        ),
+def test_build_tasks_materialises_stored_payloads() -> None:
+    future_date = date.today() + timedelta(days=5)
+    payloads = [
+        {
+            "task_id": "task-1",
+            "order_id": "ORD-1",
+            "procedure": "CT Chest",
+            "scheduled_date": future_date,
+            "reason": "Guideline matched.",
+        },
+        {
+            "order_id": None,
+            "procedure": "MRI Abdomen",
+            "scheduled_date": (date.today() + timedelta(days=60)).isoformat(),
+            "reason": "Incidental finding.",
+        },
     ]
 
-    tasks = _build_tasks(orders, recommendations)
+    tasks = _build_tasks(payloads)
     assert len(tasks) == 2
-
-    first = tasks[0]
-    assert first.task_id == "ORD-1"
-    assert first.procedure == "CT Chest"
-    assert today < first.scheduled_date <= today + timedelta(days=90)
+    assert tasks[0].task_id == "task-1"
+    assert tasks[0].scheduled_date == future_date
+    assert tasks[0].order_id == "ORD-1"
 
     second = tasks[1]
-    assert second.task_id == "ORD-2"
     assert second.procedure == "MRI Abdomen"
-    assert second.scheduled_date == today + timedelta(days=30)
+    assert second.order_id is None
+    assert second.scheduled_date > date.today()
 
 
 @pytest.mark.asyncio
@@ -312,3 +316,135 @@ async def test_health_check_endpoint_reflects_service_states(monkeypatch: pytest
     assert response.status == "unhealthy"
     assert response.services["vector_store"] == "degraded"
     assert response.services["ehr"] == "unhealthy"
+
+
+@pytest.fixture
+def api_client(monkeypatch: pytest.MonkeyPatch) -> tuple[TestClient, Any]:
+    class DummyAgent:
+        def __init__(self) -> None:
+            self.calls: list[Dict[str, Any]] = []
+            self._session = 0
+            self.base_date = date(2030, 1, 1)
+
+        def process_report(
+            self,
+            report_text: str,
+            patient_id: str | None = None,
+            patient_context: Dict[str, Any] | None = None,
+            report_id: str | None = None,
+        ) -> ProcessingResult:
+            self._session += 1
+            scheduled_date = self.base_date + timedelta(days=self._session)
+            recommendation = {
+                "id": f"rec-{self._session}",
+                "follow_up_type": "CT Chest",
+                "timeframe_months": 3,
+                "urgency": "priority",
+                "reasoning": "Test reasoning",
+                "citation": "Fleischner 2017",
+                "confidence": 0.9,
+            }
+            finding = {
+                "id": f"finding-{self._session}",
+                "type": "nodule",
+                "size_mm": 6.0,
+                "location": "RUL",
+                "confidence": 0.9,
+            }
+            task_payload = {
+                "task_id": f"task-{self._session}",
+                "order_id": f"order-{self._session}",
+                "procedure": "CT Chest",
+                "reason": "Stored reason",
+                "scheduled_date": scheduled_date,
+            }
+            state = AgentState(
+                session_id=f"session-{self._session}",
+                report_id=report_id or f"report-{self._session}",
+                report_text=report_text,
+                patient_id=patient_id,
+                patient_context=patient_context,
+                findings=[finding],
+                recommendations=[recommendation],
+                tasks_generated=[task_payload],
+                status="completed",  # type: ignore[arg-type]
+            )
+            StateManager.save_state(state)
+            self.calls.append(
+                {
+                    "report_text": report_text,
+                    "patient_id": patient_id,
+                    "patient_context": patient_context,
+                    "report_id": report_id,
+                }
+            )
+            return ProcessingResult(
+                status="success",
+                findings=state.findings,
+                recommendations=state.recommendations,
+                tasks=state.tasks_generated,
+                decision_trace=[],
+                processing_time_ms=1.0,
+                message="ok",
+                state=state,
+            )
+
+    dummy_agent = DummyAgent()
+
+    def _fake_init(app) -> None:
+        app.state.agent = dummy_agent
+        app.state.llm_client = object()
+        app.state.embedding_client = object()
+        app.state.vector_store = object()
+        app.state.ehr_client = object()
+
+    monkeypatch.setattr(app_module, "_initialise_services", _fake_init)
+    monkeypatch.setattr(app_module, "_shutdown_services", lambda app: None)
+    StateManager._memory_store.clear()  # type: ignore[attr-defined]
+    test_app = create_app()
+    test_app.dependency_overrides[get_agent] = lambda: dummy_agent
+    limiter._storage.storage.clear()  # type: ignore[attr-defined]
+
+    client = TestClient(test_app)
+    yield client, dummy_agent
+    client.close()
+    StateManager._memory_store.clear()  # type: ignore[attr-defined]
+
+
+def test_process_report_rate_limit_enforced(api_client: tuple[TestClient, object]) -> None:
+    client, _ = api_client
+    payload = {
+        "report_text": "Findings " + ("lorem ipsum dolor sit amet. " * 3),
+        "patient_id": "MRN-1",
+    }
+
+    for _ in range(10):
+        response = client.post("/api/v1/process-report", json=payload)
+        assert response.status_code == 200
+
+    response = client.post("/api/v1/process-report", json=payload)
+    assert response.status_code == 429
+
+
+def test_process_report_includes_patient_id_and_persists_tasks(api_client: tuple[TestClient, object]) -> None:
+    client, agent = api_client
+    payload = {
+        "report_text": "Extensive findings text describing nodules and impressions." * 2,
+        "patient_id": "MRN-42",
+    }
+
+    response = client.post("/api/v1/process-report", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+
+    first_call = agent.calls[0]
+    assert first_call["patient_id"] == "MRN-42"
+
+    tasks = body["tasks"]
+    expected_date = (agent.base_date + timedelta(days=1)).isoformat()
+    assert tasks[0]["scheduled_date"] == expected_date
+
+    session_id = body["session_id"]
+    session_response = client.get(f"/api/v1/session/{session_id}")
+    assert session_response.status_code == 200
+    assert session_response.json()["tasks"] == tasks

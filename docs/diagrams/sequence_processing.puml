@@ -1,0 +1,114 @@
+@startuml Report Processing Sequence
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+skinparam BoxPadding 10
+
+title Critical Workflow: Processing a Radiology Report
+
+actor Clinician as C
+participant "Web UI\n(React)" as UI
+participant "FastAPI\nGateway" as API
+participant "AuDRA\nAgent" as Agent
+participant "Report\nParser" as Parser
+participant "Embedding\nService" as Embed
+participant "Vector\nStore" as VDB
+participant "LLM\nService" as LLM
+participant "Safety\nValidator" as Validator
+participant "EHR\nSystem" as EHR
+database "Audit\nLogger" as Audit
+
+C -> UI: Upload radiology report
+activate UI
+UI -> API: POST /process-report\n{report_text, patient_id}
+activate API
+API -> Agent: process_report(report_text, patient_id)
+activate Agent
+
+note over Agent: Initialize AgentState\nsession_id, status=initialized
+
+== Step 1: Parse Report ==
+rect rgb(255,240,200)
+Agent -> Parser: parse(report_text)
+activate Parser
+Parser -> Parser: Extract sections\n(findings, impression)
+Parser -> Parser: Regex NLP\n(size, location, characteristics)
+Parser --> Agent: findings: [{type: nodule,\nsize: 3mm, location: RUL}]
+deactivate Parser
+Agent -> Audit: Log decision\n(parse_report, duration, findings)
+activate Audit
+deactivate Audit
+end
+
+== Step 2: Retrieve Guidelines ==
+rect rgb(200,240,255)
+Agent -> Embed: embed_text("ground-glass\nnodule 3mm RUL follow-up")
+activate Embed
+Embed --> Agent: query_vector [768-dim]
+deactivate Embed
+
+Agent -> VDB: hybrid_search(query_vector,\nquery_text, top_k=5)
+activate VDB
+VDB -> VDB: kNN search\n(cosine similarity, HNSW)
+VDB -> VDB: BM25 keyword search
+VDB -> VDB: Reciprocal rank fusion\nscore = 0.7/(k+rank_sem)\n+ 0.3/(k+rank_kw)
+VDB --> Agent: guidelines:\n[Fleischner SSN <6mm,\nACR Lung-RADS, ...]
+deactivate VDB
+
+Agent -> Audit: Log decision\n(retrieve_guidelines, guideline_count)
+activate Audit
+deactivate Audit
+end
+
+== Step 3: Match Recommendation ==
+rect rgb(200,255,200)
+Agent -> LLM: Prompt:\n"Finding: 3mm ground-glass nodule RUL\nGuidelines: [Fleischner 2017 SSN <6mm]\nRecommend follow-up?"
+activate LLM
+LLM --> Agent: {follow_up_type: "CT Chest",\ntimeframe: 6-12 months,\nurgency: routine,\ncitation: "Fleischner 2017"}
+deactivate LLM
+
+Agent -> Audit: Log decision\n(match_recommendation, recommendation)
+activate Audit
+deactivate Audit
+end
+
+== Step 4: Validate Safety ==
+rect rgb(255,220,255)
+Agent -> Validator: validate_safety(recommendation,\nfinding)
+activate Validator
+Validator -> Validator: Check: size >30mm?\nspiculated? urgent?
+Validator -> Validator: Check: citation present?
+Validator --> Agent: {is_safe: true,\nconcerns: [],\nrequires_review: false}
+deactivate Validator
+
+Agent -> Audit: Log decision\n(validate_safety, is_safe)
+activate Audit
+deactivate Audit
+end
+
+== Step 5: Generate Task ==
+rect rgb(255,200,200)
+Agent -> Agent: Build FHIR ServiceRequest\n(code: CT Chest,\ntiming: 6 months)
+Agent -> EHR: POST /ServiceRequest
+activate EHR
+EHR --> Agent: order_id:\nRAD-20250116-4721
+deactivate EHR
+
+Agent -> Audit: Log decision\n(generate_task, order_id)
+activate Audit
+deactivate Audit
+end
+
+Agent -> Agent: Set status=completed
+Agent --> API: ProcessingResult\n{status: success,\nfindings, recommendations, tasks}
+deactivate Agent
+
+API --> UI: 200 OK\n{session_id, findings,\nrecommendations, tasks}
+deactivate API
+
+UI --> C: Display results\n(findings, guideline citations,\nfollow-up orders)
+deactivate UI
+
+note over C, UI: Clinician reviews\nand approves
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml AuDRA-Rad Context Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context Diagram - AuDRA-Rad
+
+Person(clinician, "Clinician", "Radiologist or referring physician reviewing reports and managing follow-ups")
+Person(patient, "Patient", "Individual receiving radiology imaging and follow-up care")
+
+System(audra, "AuDRA-Rad", "Autonomous Radiology Follow-up Assistant\n\nProcesses radiology reports, matches evidence-based guidelines, generates FHIR ServiceRequests for follow-up imaging/procedures")
+
+System_Ext(ris, "Radiology Information System (RIS)", "Source of radiology reports and imaging studies (FHIR DiagnosticReport)")
+System_Ext(ehr, "EHR System", "Epic/Cerner FHIR-compliant hospital EHR for patient data and order management")
+System_Ext(llm_cloud, "Cloud LLM Service", "NVIDIA NIM (Nemotron-4 340B) for medical reasoning and NLP")
+System_Ext(llm_local, "Local LLM (Ollama)", "On-premise Llama 3.1 8B for privacy-sensitive deployments")
+System_Ext(guideline_db, "Medical Guideline Repository", "Fleischner Society 2017, ACR Lung-RADS, ACR Liver guidelines")
+
+Rel(clinician, audra, "Uploads reports, reviews recommendations, approves follow-ups", "HTTPS/Web UI")
+Rel(audra, ehr, "Creates ServiceRequests, reads patient demographics", "FHIR R4 REST API")
+Rel(audra, ris, "Ingests radiology reports", "HL7 FHIR")
+Rel(audra, llm_cloud, "Sends prompts for reasoning", "REST API")
+Rel(audra, llm_local, "Sends prompts (local deployment)", "HTTP/Ollama API")
+Rel(audra, guideline_db, "Indexes and retrieves guidelines", "Vector embeddings (768-dim)")
+Rel(ehr, patient, "Schedules follow-up appointments", "")
+Rel(clinician, ehr, "Reviews patient records", "")
+
+SHOW_LEGEND()
+@enduml

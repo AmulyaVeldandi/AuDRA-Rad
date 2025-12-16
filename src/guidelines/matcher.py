@@ -19,7 +19,7 @@ class Recommendation:
 
     follow_up_type: str
     timeframe_months: Optional[int]
-    urgency: Literal["routine", "semi-urgent", "urgent", "stat"]
+    urgency: Literal["routine", "priority", "urgent", "stat"]
     reasoning: str
     citation: str
     confidence: float
@@ -35,7 +35,7 @@ class RecommendationMatcher:
             "timeframe_months": {"type": ["integer", "null"], "minimum": 0},
             "urgency": {
                 "type": "string",
-                "enum": ["routine", "semi-urgent", "urgent", "stat"],
+                "enum": ["routine", "priority", "urgent", "stat"],
             },
             "reasoning": {"type": "string", "minLength": 1},
             "citation": {"type": "string", "minLength": 1},
@@ -58,9 +58,11 @@ class RecommendationMatcher:
         """Return the most appropriate follow-up recommendation."""
 
         if not guidelines:
-            raise ValueError("At least one guideline chunk is required for matching.")
-
-        prompt = self._build_prompt(finding, guidelines, patient_context)
+            # Ollama mode without RAG - use LLM's general medical knowledge
+            self._logger.info("No guidelines available, using LLM general knowledge.")
+            prompt = self._build_prompt_without_guidelines(finding, patient_context)
+        else:
+            prompt = self._build_prompt(finding, guidelines, patient_context)
         self._logger.info(
             "Requesting recommendation from LLM.",
             extra={"context": {"finding": finding, "guideline_count": len(guidelines)}},
@@ -68,19 +70,23 @@ class RecommendationMatcher:
 
         try:
             response = self._llm_client.generate_json(prompt, schema=self._OUTPUT_SCHEMA)
-        except NIMServiceError as exc:
+        except Exception as exc:
             self._logger.warning(
-                "Nemotron call failed; falling back to heuristic recommendation.",
+                "LLM call failed; falling back to heuristic recommendation.",
                 extra={"context": {"error": str(exc)}},
             )
-            return self._fallback_recommendation(guidelines)
+            if guidelines:
+                return self._fallback_recommendation(guidelines)
+            else:
+                return self._default_recommendation(finding)
 
-        if not self.validate_recommendation(response, guidelines):
-            self._logger.warning(
-                "LLM response did not align with provided guidelines; applying fallback.",
-                extra={"context": {"response": response}},
-            )
-            return self._fallback_recommendation(guidelines)
+        if guidelines:
+            if not self.validate_recommendation(response, guidelines):
+                self._logger.warning(
+                    "LLM response did not align with provided guidelines; applying fallback.",
+                    extra={"context": {"response": response}},
+                )
+                return self._fallback_recommendation(guidelines)
 
         timeframe = response.get("timeframe_months")
         if timeframe is not None:
@@ -133,7 +139,7 @@ class RecommendationMatcher:
                 return False
 
         urgency = rec.get("urgency")
-        if urgency not in {"routine", "semi-urgent", "urgent", "stat"}:
+        if urgency not in {"routine", "priority", "urgent", "stat"}:
             return False
 
         follow_up_type = rec.get("follow_up_type")
@@ -179,6 +185,60 @@ class RecommendationMatcher:
             '"reasoning": "...", "citation": "..."}'
         )
         return prompt
+
+    def _build_prompt_without_guidelines(
+        self,
+        finding: Dict[str, object],
+        patient_context: Optional[Dict[str, object]],
+    ) -> str:
+        """Build a prompt for LLM without retrieved guidelines (Ollama mode)."""
+        finding_description = json.dumps(finding, ensure_ascii=False)
+        patient_description = json.dumps(patient_context or {}, ensure_ascii=False)
+
+        prompt = (
+            "You are a clinical decision support system for radiology follow-up.\n\n"
+            f"Finding: {finding_description}\n"
+            f"Patient: {patient_description}\n\n"
+            "Based on standard clinical practice and medical guidelines "
+            "(such as Fleischner Society guidelines for pulmonary nodules), determine:\n"
+            "1. Is follow-up needed for this finding?\n"
+            "2. If yes, what type of follow-up (CT, MRI, biopsy, clinical evaluation)?\n"
+            "3. What timeframe in months?\n"
+            "4. What urgency level (routine, priority, urgent, stat)?\n"
+            "5. What is the clinical reasoning?\n\n"
+            "Return as JSON: "
+            '{"follow_up_type": "...", "timeframe_months": 0, "urgency": "routine", '
+            '"reasoning": "...", "citation": "Standard clinical practice"}'
+        )
+        return prompt
+
+    def _default_recommendation(self, finding: Dict[str, object]) -> Recommendation:
+        """Generate a conservative default recommendation when no guidelines available and LLM fails."""
+        finding_type = str(finding.get("type", "finding"))
+        size_mm = finding.get("size_mm")
+
+        # Conservative defaults based on finding type
+        if finding_type.lower() in ("nodule", "pulmonary_nodule"):
+            if size_mm and float(size_mm) >= 6:
+                timeframe = 6
+                reasoning = "Conservative follow-up recommended for nodule ≥6mm based on general clinical practice."
+            else:
+                timeframe = 12
+                reasoning = "Annual follow-up recommended for small nodule based on general clinical practice."
+            follow_up_type = "CT chest"
+        else:
+            timeframe = 6
+            follow_up_type = "Clinical evaluation"
+            reasoning = f"Follow-up recommended for {finding_type} based on general clinical practice."
+
+        return Recommendation(
+            follow_up_type=follow_up_type,
+            timeframe_months=timeframe,
+            urgency="routine",
+            reasoning=reasoning,
+            citation="Standard clinical practice (no specific guideline available)",
+            confidence=0.3,
+        )
 
     def _fallback_recommendation(self, guidelines: List[GuidelineChunk]) -> Recommendation:
         guideline = guidelines[0]
@@ -248,4 +308,3 @@ class RecommendationMatcher:
         if "ct" in lowered:
             return "CT"
         return None
-

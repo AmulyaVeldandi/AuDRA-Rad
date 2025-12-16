@@ -70,11 +70,11 @@ export interface MetricsSnapshot {
 }
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api/v1`,
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000,
+  timeout: 1000000,
 });
 
 export const api = {

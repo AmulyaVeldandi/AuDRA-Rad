@@ -9,7 +9,7 @@ from uuid import uuid4
 
 from src.utils.logger import get_logger
 
-TaskPriority = Literal["routine", "urgent", "stat"]
+TaskPriority = Literal["routine", "priority", "urgent", "stat"]
 
 PROCEDURE_CODES: Dict[str, Dict[str, Dict[str, str]]] = {
     "CT Chest": {
@@ -246,8 +246,8 @@ class TaskGenerator:
 
         sanitized = urgency.strip().lower()
         if sanitized == "semi-urgent":
-            sanitized = "urgent"
-        if sanitized not in {"routine", "urgent", "stat"}:
+            sanitized = "priority"
+        if sanitized not in {"routine", "priority", "urgent", "stat"}:
             raise ValueError(f"Unsupported urgency level '{urgency}'.")
         return sanitized  # type: ignore[return-value]
 

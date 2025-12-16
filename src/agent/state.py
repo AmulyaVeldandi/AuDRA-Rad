@@ -21,11 +21,12 @@ class AgentState(BaseModel):
     session_id: str
     report_id: str
     report_text: str
+    patient_id: Optional[str] = None
     patient_context: Optional[Dict[str, Any]] = None
     findings: List[Dict[str, Any]] = Field(default_factory=list)
     retrieved_guidelines: List[Dict[str, Any]] = Field(default_factory=list)
     recommendations: List[Dict[str, Any]] = Field(default_factory=list)
-    tasks_generated: List[str] = Field(default_factory=list)
+    tasks_generated: List[Dict[str, Any]] = Field(default_factory=list)
     decision_trace: List[Dict[str, Any]] = Field(default_factory=list)
     status: Literal[
         "initialized",

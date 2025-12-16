@@ -42,7 +42,7 @@ class ProcessingResult:
     status: Literal["success", "no_findings", "requires_review", "error"]
     findings: List[Dict[str, Any]] = field(default_factory=list)
     recommendations: List[Dict[str, Any]] = field(default_factory=list)
-    tasks: List[str] = field(default_factory=list)
+    tasks: List[Dict[str, Any]] = field(default_factory=list)
     decision_trace: List[Dict[str, Any]] = field(default_factory=list)
     processing_time_ms: float = 0.0
     message: Optional[str] = None
@@ -95,6 +95,7 @@ class AuDRAAgent:
     def process_report(
         self,
         report_text: str,
+        patient_id: Optional[str] = None,
         patient_context: Optional[Dict[str, Any]] = None,
         report_id: Optional[str] = None,
     ) -> ProcessingResult:
@@ -103,11 +104,15 @@ class AuDRAAgent:
         start_time = perf_counter()
         session_id = str(uuid4())
         resolved_report_id = report_id or str(uuid4())
+        merged_context = dict(patient_context or {})
+        if patient_id:
+            merged_context.setdefault("patient_id", patient_id)
         state = AgentState(
             session_id=session_id,
             report_id=resolved_report_id,
             report_text=report_text,
-            patient_context=patient_context,
+            patient_id=patient_id,
+            patient_context=merged_context or None,
             status="initialized",
         )
         StateManager.save_state(state)

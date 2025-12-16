@@ -11,9 +11,10 @@ import { ReportUpload } from "./components/ReportUpload";
 import { ReportViewer } from "./components/ReportViewer";
 import { FindingsList } from "./components/FindingsList";
 import { GuidelineMatches } from "./components/GuidelineMatches";
-import { TaskList } from "./components/TaskList";
+import { FollowUpOrders } from "./components/FollowUpOrders";
 import { HealthIndicator } from "./components/HealthIndicator";
 import { LoadingSpinner } from "./components/LoadingSpinner";
+import { PatientSummary } from "./components/PatientSummary";
 
 type ReportResult = ProcessReportResponse & { reportText: string };
 
@@ -29,6 +30,7 @@ const mapHealthResponse = (health?: ApiHealthResponse) =>
 export const App: React.FC = () => {
   const [results, setResults] = useState<ReportResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activePatientId, setActivePatientId] = useState<string | undefined>(undefined);
 
   const { data: healthData, isLoading: healthLoading } = useQuery({
     queryKey: ["health"],
@@ -44,13 +46,15 @@ export const App: React.FC = () => {
       const payload: ProcessReportRequest = {
         report_text: reportText,
       };
-      if (patientId) {
-        payload.patient_id = patientId;
+      const normalizedPatientId = patientId?.trim();
+      if (normalizedPatientId) {
+        payload.patient_id = normalizedPatientId;
       }
 
       try {
         const response = await api.processReport(payload);
         setResults({ ...response, reportText });
+        setActivePatientId(normalizedPatientId || undefined);
       } catch (error) {
         if (isAxiosError(error)) {
           const message =
@@ -92,17 +96,31 @@ export const App: React.FC = () => {
         )}
 
         {results && (
-          <section className="results-section">
-            <ReportViewer
-              reportText={results.reportText}
-              status={results.status}
-              processingTimeMs={results.processing_time_ms}
-              sessionId={results.session_id}
-              message={results.message}
-            />
-            <FindingsList findings={results.findings} />
-            <GuidelineMatches recommendations={results.recommendations} />
-            <TaskList tasks={results.tasks} />
+          <section className="ehr-layout">
+            <div className="ehr-column">
+              <PatientSummary
+                patientId={activePatientId}
+                reportId={results.report_id}
+                sessionId={results.session_id}
+                status={results.status}
+                requiresReview={results.requires_human_review}
+                totalFindings={results.findings.length}
+                totalRecommendations={results.recommendations.length}
+                totalTasks={results.tasks.length}
+              />
+              <ReportViewer
+                reportText={results.reportText}
+                status={results.status}
+                processingTimeMs={results.processing_time_ms}
+                sessionId={results.session_id}
+                message={results.message}
+              />
+              <GuidelineMatches recommendations={results.recommendations} />
+            </div>
+            <div className="ehr-column ehr-column--secondary">
+              <FollowUpOrders tasks={results.tasks} patientId={activePatientId} />
+              <FindingsList findings={results.findings} />
+            </div>
           </section>
         )}
       </main>

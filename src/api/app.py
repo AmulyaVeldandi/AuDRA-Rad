@@ -24,7 +24,9 @@ from src.services.ehr_client import EHRClient
 from src.services.nim_embeddings import EmbeddingClient, NIMServiceError as EmbeddingServiceError
 from src.services.nim_llm import NIMServiceError, NemotronClient
 from src.services.ollama_llm import OllamaClient, OllamaServiceError
+from src.services.ollama_embeddings import OllamaEmbeddingClient, OllamaEmbeddingError
 from src.services.vector_store import VectorStore, VectorStoreError
+from src.services.simple_vector_store import SimpleVectorStore
 from src.utils.config import get_settings
 from src.utils.logger import clear_correlation_id, get_logger, set_correlation_id
 
@@ -98,11 +100,29 @@ def _initialise_services(app: FastAPI) -> None:
                 extra={"context": {"error": str(exc)}},
             )
 
-    # When using Ollama, embeddings and vector store are optional
-    # Ollama can work standalone without RAG-based guideline retrieval
+    # Initialize embeddings and vector store based on backend
     if SETTINGS.LLM_BACKEND == "ollama":
-        logger.info("Ollama mode: Embeddings and vector store are optional.")
-        # Skip embedding and vector store initialization for Ollama
+        # For Ollama, use Ollama embeddings and simple local vector store
+        try:
+            embedding_client = OllamaEmbeddingClient(
+                model_name="nomic-embed-text",
+                base_url=SETTINGS.OLLAMA_BASE_URL
+            )
+            logger.info("Ollama embedding client initialised (model=nomic-embed-text).")
+        except OllamaEmbeddingError as exc:
+            logger.error(
+                "Ollama embedding client initialisation failed.",
+                extra={"context": {"error": str(exc)}},
+            )
+
+        try:
+            vector_store = SimpleVectorStore(index_name="medical_guidelines")
+            logger.info(f"Simple vector store initialised ({vector_store.get_document_count()} documents indexed).")
+        except Exception as exc:
+            logger.error(
+                "Simple vector store initialisation failed.",
+                extra={"context": {"error": str(exc)}},
+            )
     else:
         # For NIM backend, initialize embeddings and vector store
         try:
@@ -137,12 +157,8 @@ def _initialise_services(app: FastAPI) -> None:
             extra={"context": {"error": str(exc)}},
         )
 
-    # For Ollama mode, only require llm_client and ehr_client
-    # For NIM mode, require all services
-    if SETTINGS.LLM_BACKEND == "ollama":
-        required_services_met = llm_client and ehr_client
-    else:
-        required_services_met = llm_client and embedding_client and vector_store and ehr_client
+    # All backends now require all services
+    required_services_met = llm_client and embedding_client and vector_store and ehr_client
 
     if required_services_met:
         app.state.agent = AuDRAAgent(

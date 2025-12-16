@@ -13,3 +13,4 @@ dist/
 build/
 *.log
 deployment/kubernetes/eks/secrets.yaml
+examples/mimic_exploration/

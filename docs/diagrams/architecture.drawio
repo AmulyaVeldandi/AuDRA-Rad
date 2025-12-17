@@ -1,0 +1,748 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.2.7" pages="4">
+  <diagram name="System Context" id="system-context">
+    <mxGraphModel dx="1273" dy="861" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title-1" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" value="System Context Diagram (C4 Level 1)" vertex="1">
+          <mxGeometry height="40" width="520" x="320" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="actor-clinician" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;b&gt;Clinician&lt;/b&gt;&lt;br&gt;(Radiologist/Physician)&lt;br&gt;&lt;br&gt;Reviews reports,&lt;br&gt;approves recommendations" vertex="1">
+          <mxGeometry height="120" width="60" x="100" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="system-audra" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;align=center;verticalAlign=middle;strokeWidth=3;" value="&lt;b&gt;AuDRA-Rad System&lt;/b&gt;&lt;br&gt;&lt;br&gt;Parses radiology reports → Retrieves medical guidelines → Generates follow-up recommendations → Creates EHR orders&lt;br&gt;&lt;br&gt;&lt;i&gt;Tech: Python/FastAPI, React, Vector DB&lt;/i&gt;" vertex="1">
+          <mxGeometry height="160" width="440" x="360" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-ris" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;strokeWidth=2;" value="&lt;b&gt;RIS&lt;/b&gt;&lt;br&gt;(Radiology Information System)&lt;br&gt;&lt;br&gt;Source of radiology reports" vertex="1">
+          <mxGeometry height="100" width="200" x="100" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-ehr" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;strokeWidth=2;" value="&lt;b&gt;EHR System&lt;/b&gt;&lt;br&gt;(Epic/Cerner)&lt;br&gt;&lt;br&gt;Receives FHIR ServiceRequests&lt;br&gt;for follow-up orders" vertex="1">
+          <mxGeometry height="100" width="200" x="360" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-llm-cloud" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;strokeWidth=2;" value="&lt;b&gt;NVIDIA NIM&lt;/b&gt;&lt;br&gt;(Cloud LLM)&lt;br&gt;&lt;br&gt;Nemotron-4 70B&lt;br&gt;NVEmbed-v2 (768d)" vertex="1">
+          <mxGeometry height="100" width="200" x="600" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-llm-local" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;strokeWidth=2;" value="&lt;b&gt;Ollama&lt;/b&gt;&lt;br&gt;(Local LLM)&lt;br&gt;&lt;br&gt;Llama 3.1 8B&lt;br&gt;nomic-embed-text (768d)" vertex="1">
+          <mxGeometry height="100" width="200" x="840" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-guidelines" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;strokeWidth=2;" value="&lt;b&gt;Medical Guidelines DB&lt;/b&gt;&lt;br&gt;&lt;br&gt;Fleischner 2017&lt;br&gt;ACR Lung-RADS&lt;br&gt;ACR Liver Lesions" vertex="1">
+          <mxGeometry height="120" width="200" x="100" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="conn-1" edge="1" parent="1" source="actor-clinician" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066CC;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.3;exitDx=0;exitDy=0;exitPerimeter=0;" target="system-audra" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="160" y="240" as="sourcePoint" />
+            <mxPoint x="360" y="240" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-1-label" connectable="0" parent="conn-1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#0066CC;fontStyle=1;backgroundColor=#E6F2FF;" value="1. Uploads reports via Web UI&lt;br&gt;2. Reviews recommendations&lt;br&gt;(HTTPS)" vertex="1">
+          <mxGeometry relative="1" x="-0.1" y="-1" as="geometry">
+            <mxPoint x="10" y="-30" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-2" edge="1" parent="1" source="system-audra" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#CC6600;dashed=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" target="ext-ris" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="420" y="360" as="sourcePoint" />
+            <mxPoint x="200" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-2-label" connectable="0" parent="conn-2" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#CC6600;fontStyle=1;backgroundColor=#FFF5E6;" value="3. Ingests reports&lt;br&gt;(Optional: HL7 FHIR)" vertex="1">
+          <mxGeometry relative="1" x="0.1" y="1" as="geometry">
+            <mxPoint x="-40" y="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-3" edge="1" parent="1" source="system-audra" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#009900;exitX=0.4;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ext-ehr" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="480" y="350" as="sourcePoint" />
+            <mxPoint x="460" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-3-label" connectable="0" parent="conn-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#009900;fontStyle=1;backgroundColor=#E6FFE6;" value="4. Creates ServiceRequests&lt;br&gt;(FHIR R4, mTLS)" vertex="1">
+          <mxGeometry relative="1" x="0.1" y="1" as="geometry">
+            <mxPoint y="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-4" edge="1" parent="1" source="system-audra" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#9933FF;exitX=0.6;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ext-llm-cloud" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="624" y="350" as="sourcePoint" />
+            <mxPoint x="700" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-4-label" connectable="0" parent="conn-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#9933FF;fontStyle=1;backgroundColor=#F5E6FF;" value="5. LLM prompts + embeddings&lt;br&gt;(REST API)" vertex="1">
+          <mxGeometry relative="1" x="0.1" y="1" as="geometry">
+            <mxPoint y="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-5" edge="1" parent="1" source="system-audra" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#9933FF;dashed=1;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="ext-llm-local" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="712" y="350" as="sourcePoint" />
+            <mxPoint x="940" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-5-label" connectable="0" parent="conn-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#9933FF;fontStyle=1;backgroundColor=#F5E6FF;" value="5alt. Local LLM (dev mode)&lt;br&gt;(HTTP localhost:11434)" vertex="1">
+          <mxGeometry relative="1" x="0.1" y="1" as="geometry">
+            <mxPoint x="30" y="-5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-6" edge="1" parent="1" source="ext-guidelines" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#CC0000;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" target="system-audra" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="630" />
+              <mxPoint x="60" y="360" />
+              <mxPoint x="580" y="360" />
+            </Array>
+            <mxPoint x="200" y="600" as="sourcePoint" />
+            <mxPoint x="450" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-6-label" connectable="0" parent="conn-6" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontColor=#CC0000;fontStyle=1;backgroundColor=#FFE6E6;" value="6. Vector search (768d embeddings)&lt;br&gt;OpenSearch/Faiss + BM25 hybrid" vertex="1">
+          <mxGeometry relative="1" x="0.1" y="1" as="geometry">
+            <mxPoint x="100" y="-15" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-box" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=1;" value="" vertex="1">
+          <mxGeometry height="120" width="240" x="900" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" value="&lt;b&gt;Legend&lt;/b&gt;" vertex="1">
+          <mxGeometry height="20" width="100" x="910" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-solid" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0066CC;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="920" y="120" as="sourcePoint" />
+            <mxPoint x="980" y="120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-solid-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="Production flow" vertex="1">
+          <mxGeometry height="20" width="140" x="990" y="110" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-dashed" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#CC6600;dashed=1;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="920" y="145" as="sourcePoint" />
+            <mxPoint x="980" y="145" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-dashed-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="Optional/Alternative flow" vertex="1">
+          <mxGeometry height="20" width="140" x="990" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-actor" parent="1" style="shape=umlActor;verticalLabelPosition=middle;verticalAlign=middle;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;labelPosition=right;align=left;" value="" vertex="1">
+          <mxGeometry height="30" width="20" x="920" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-actor-label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" value="Human actor" vertex="1">
+          <mxGeometry height="20" width="140" x="950" y="165" as="geometry" />
+        </mxCell>
+        <mxCell id="notes-box" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;strokeWidth=1;align=left;verticalAlign=top;fontSize=11;" value="&lt;b&gt;Key Points:&lt;/b&gt;&lt;br&gt;• Dual LLM support: NVIDIA NIM (cloud) OR Ollama (local)&lt;br&gt;• Vector DB: OpenSearch (cloud) OR Faiss (local)&lt;br&gt;• Processing time: 3-5 seconds per report&lt;br&gt;• HIPAA compliant with TLS 1.3, encryption at rest" vertex="1">
+          <mxGeometry height="120" width="240" x="900" y="220" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Container Architecture" id="container">
+    <mxGraphModel dx="1434" dy="796" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Title -->
+        <mxCell id="title-2" value="Container Architecture Diagram (C4 Level 2)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="320" y="20" width="520" height="40" as="geometry" />
+        </mxCell>
+        <!-- Frontend -->
+        <mxCell id="frontend" value="&lt;b&gt;Web UI&lt;/b&gt;&lt;br&gt;(React 18 + TypeScript + Vite)&lt;br&gt;&lt;br&gt;• Report upload form&lt;br&gt;• Findings display&lt;br&gt;• Recommendation review&lt;br&gt;• Task approval interface&lt;br&gt;&lt;br&gt;Port: 5173 (dev)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;fontSize=11;align=left;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="200" height="180" as="geometry" />
+        </mxCell>
+        <!-- API Gateway -->
+        <mxCell id="api" value="&lt;b&gt;API Gateway&lt;/b&gt;&lt;br&gt;(FastAPI + Uvicorn)&lt;br&gt;&lt;br&gt;• POST /api/v1/process-report&lt;br&gt;• POST /api/v1/batch-process&lt;br&gt;• GET /api/v1/session/{id}&lt;br&gt;• GET /api/v1/health&lt;br&gt;• Rate limit: 10 req/min&lt;br&gt;&lt;br&gt;Port: 8000" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=11;align=left;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="360" y="100" width="200" height="180" as="geometry" />
+        </mxCell>
+        <!-- Agent Orchestrator -->
+        <mxCell id="orchestrator" value="&lt;b&gt;Agent Orchestrator&lt;/b&gt;&lt;br&gt;(Python Sequential Pipeline)&lt;br&gt;&lt;br&gt;1. Parse → 2. Retrieve →&lt;br&gt;3. Match → 4. Validate →&lt;br&gt;5. Generate&lt;br&gt;&lt;br&gt;• AgentState management&lt;br&gt;• Decision trace logging&lt;br&gt;• Error handling with retries" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;fontSize=11;align=left;verticalAlign=top;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="640" y="100" width="220" height="180" as="geometry" />
+        </mxCell>
+        <!-- Tools Row 1 -->
+        <mxCell id="tool-parser" value="&lt;b&gt;Report Parser&lt;/b&gt;&lt;br&gt;(Regex NLP)&lt;br&gt;&lt;br&gt;Extracts findings:&lt;br&gt;• Size (mm/cm)&lt;br&gt;• Location&lt;br&gt;• Characteristics&lt;br&gt;• Confidence score" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;fontSize=10;align=left;verticalAlign=top;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="350" width="160" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="tool-retriever" value="&lt;b&gt;Guideline Retriever&lt;/b&gt;&lt;br&gt;(RAG Pipeline)&lt;br&gt;&lt;br&gt;• Build query from finding&lt;br&gt;• Generate embedding (768d)&lt;br&gt;• Hybrid search (kNN+BM25)&lt;br&gt;• Rerank by size/risk&lt;br&gt;• Return top-5 chunks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;fontSize=10;align=left;verticalAlign=top;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="350" width="160" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="tool-matcher" value="&lt;b&gt;Recommendation Matcher&lt;/b&gt;&lt;br&gt;(LLM Reasoner)&lt;br&gt;&lt;br&gt;• Build prompt with context&lt;br&gt;• LLM JSON generation&lt;br&gt;• Schema validation&lt;br&gt;• Citation check&lt;br&gt;• Fallback to heuristics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;fontSize=10;align=left;verticalAlign=top;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="350" width="160" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="tool-validator" value="&lt;b&gt;Safety Validator&lt;/b&gt;&lt;br&gt;(Rule Engine)&lt;br&gt;&lt;br&gt;Checks:&lt;br&gt;• Size &gt; 30mm&lt;br&gt;• Suspicious features&lt;br&gt;• Urgency level&lt;br&gt;• Missing citation&lt;br&gt;→ Flags for review" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;fontSize=10;align=left;verticalAlign=top;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="350" width="160" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="tool-generator" value="&lt;b&gt;Task Generator&lt;/b&gt;&lt;br&gt;(FHIR Builder)&lt;br&gt;&lt;br&gt;• Build ServiceRequest&lt;br&gt;• Calculate timing&lt;br&gt;• Add clinical notes&lt;br&gt;• Generate order ID&lt;br&gt;• Submit to EHR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;fontSize=10;align=left;verticalAlign=top;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="350" width="160" height="130" as="geometry" />
+        </mxCell>
+        <!-- Data Stores -->
+        <mxCell id="vector-db" value="&lt;b&gt;Vector Store&lt;/b&gt;&lt;br&gt;(OpenSearch HNSW /&lt;br&gt;NumPy Faiss)&lt;br&gt;&lt;br&gt;• 768-dim embeddings&lt;br&gt;• ~10k guideline chunks&lt;br&gt;• Metadata filters&lt;br&gt;• &lt;500ms search" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=10;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="560" width="140" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="state-store" value="&lt;b&gt;State Manager&lt;/b&gt;&lt;br&gt;(In-Memory Dict /&lt;br&gt;Optional Redis)&lt;br&gt;&lt;br&gt;• AgentState objects&lt;br&gt;• Session tracking&lt;br&gt;• Decision traces" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=10;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="260" y="560" width="140" height="140" as="geometry" />
+        </mxCell>
+        <!-- External Services -->
+        <mxCell id="ext-llm-service" value="&lt;b&gt;LLM Service&lt;/b&gt;&lt;br&gt;&lt;br&gt;NIM: Nemotron-4 70B&lt;br&gt;Ollama: Llama 3.1 8B&lt;br&gt;&lt;br&gt;JSON mode enabled" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=10;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="980" y="100" width="150" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-embed-service" value="&lt;b&gt;Embedding Service&lt;/b&gt;&lt;br&gt;&lt;br&gt;NIM: NVEmbed-v2&lt;br&gt;Ollama: nomic-embed-text&lt;br&gt;&lt;br&gt;768-dim output" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=10;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="980" y="230" width="150" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="ext-ehr-service" value="&lt;b&gt;EHR Client&lt;/b&gt;&lt;br&gt;&lt;br&gt;Mock mode: In-memory&lt;br&gt;Prod mode: FHIR R4 API&lt;br&gt;&lt;br&gt;Creates ServiceRequests" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=10;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="980" y="360" width="150" height="100" as="geometry" />
+        </mxCell>
+        <!-- Connections -->
+        <mxCell id="conn-fe-api" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#1976D2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="frontend" target="api">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="300" y="190" as="sourcePoint" />
+            <mxPoint x="350" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-fe-api-label" value="HTTPS/JSON" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;fontColor=#1976D2;backgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="conn-fe-api">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-orch" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#F57C00;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="orchestrator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="580" y="190" as="sourcePoint" />
+            <mxPoint x="630" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-orch-label" value="process_report()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;fontColor=#F57C00;backgroundColor=#FFF3E0;" vertex="1" connectable="0" parent="conn-api-orch">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-parser" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388E3C;exitX=0.2;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="orchestrator" target="tool-parser">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="684" y="290" as="sourcePoint" />
+            <mxPoint x="160" y="340" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="684" y="320" />
+              <mxPoint x="160" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-parser-label" value="1. parse()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#388E3C;backgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="conn-orch-parser">
+          <mxGeometry x="0.2" relative="1" as="geometry">
+            <mxPoint x="-50" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-retriever" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388E3C;exitX=0.35;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="orchestrator" target="tool-retriever">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="717" y="290" as="sourcePoint" />
+            <mxPoint x="340" y="340" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="717" y="320" />
+              <mxPoint x="340" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-retriever-label" value="2. retrieve()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#388E3C;backgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="conn-orch-retriever">
+          <mxGeometry x="0.2" relative="1" as="geometry">
+            <mxPoint x="-40" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-matcher" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388E3C;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="orchestrator" target="tool-matcher">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="750" y="290" as="sourcePoint" />
+            <mxPoint x="520" y="340" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="750" y="320" />
+              <mxPoint x="520" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-matcher-label" value="3. match()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#388E3C;backgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="conn-orch-matcher">
+          <mxGeometry x="0.2" relative="1" as="geometry">
+            <mxPoint x="-30" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-validator" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388E3C;exitX=0.65;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="orchestrator" target="tool-validator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="783" y="290" as="sourcePoint" />
+            <mxPoint x="700" y="340" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="783" y="320" />
+              <mxPoint x="700" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-validator-label" value="4. validate()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#388E3C;backgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="conn-orch-validator">
+          <mxGeometry x="0.2" relative="1" as="geometry">
+            <mxPoint x="-20" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-generator" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388E3C;exitX=0.8;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="orchestrator" target="tool-generator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="816" y="290" as="sourcePoint" />
+            <mxPoint x="880" y="340" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="816" y="320" />
+              <mxPoint x="880" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-generator-label" value="5. generate()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#388E3C;backgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="conn-orch-generator">
+          <mxGeometry x="0.2" relative="1" as="geometry">
+            <mxPoint x="10" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-retriever-vectordb" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0288D1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="tool-retriever" target="vector-db">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="300" y="490" as="sourcePoint" />
+            <mxPoint x="150" y="550" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="300" y="520" />
+              <mxPoint x="150" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-retriever-vectordb-label" value="hybrid_search()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#0288D1;backgroundColor=#E1F5FE;" vertex="1" connectable="0" parent="conn-retriever-vectordb">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint x="-10" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-state" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0288D1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="orchestrator" target="state-store">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="750" y="290" as="sourcePoint" />
+            <mxPoint x="330" y="550" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="750" y="520" />
+              <mxPoint x="330" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-orch-state-label" value="save/load state" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#0288D1;backgroundColor=#E1F5FE;" vertex="1" connectable="0" parent="conn-orch-state">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint x="50" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-matcher-llm" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#F9A825;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="tool-matcher" target="ext-llm-service">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="600" y="380" as="sourcePoint" />
+            <mxPoint x="970" y="150" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="920" y="383" />
+              <mxPoint x="920" y="150" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-matcher-llm-label" value="generate_json()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#F9A825;backgroundColor=#FFF9C4;" vertex="1" connectable="0" parent="conn-matcher-llm">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint x="10" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-retriever-embed" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#F9A825;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="tool-retriever" target="ext-embed-service">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="420" y="383" as="sourcePoint" />
+            <mxPoint x="970" y="280" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="900" y="383" />
+              <mxPoint x="900" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-retriever-embed-label" value="embed_text()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#F9A825;backgroundColor=#FFF9C4;" vertex="1" connectable="0" parent="conn-retriever-embed">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint x="10" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-generator-ehr" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#F9A825;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="tool-generator" target="ext-ehr-service">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="960" y="415" as="sourcePoint" />
+            <mxPoint x="980" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-generator-ehr-label" value="create_service_request()" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#F9A825;backgroundColor=#FFF9C4;" vertex="1" connectable="0" parent="conn-generator-ehr">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Notes -->
+        <mxCell id="notes2" value="&lt;b&gt;Key Architecture Points:&lt;/b&gt;&lt;br&gt;• Sequential pipeline, NOT async ReAct loop&lt;br&gt;• Each tool returns (state, result) tuple&lt;br&gt;• State accumulates: findings → guidelines → recommendations → tasks&lt;br&gt;• 2 retry attempts per tool with exponential backoff&lt;br&gt;• Decision trace logs every step for auditability&lt;br&gt;• Human review flags set in validator, bypass task generation" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;strokeWidth=1;align=left;verticalAlign=top;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="560" width="670" height="140" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="Processing Sequence" id="sequence">
+    <mxGraphModel dx="1434" dy="796" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Title -->
+        <mxCell id="title-3" value="Report Processing Sequence Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="320" y="20" width="520" height="40" as="geometry" />
+        </mxCell>
+        <!-- Participants (Lifelines) -->
+        <mxCell id="participant-clinician" value="Clinician" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="80" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-api" value="FastAPI" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="160" y="80" width="80" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-orchestrator" value="Orchestrator" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="270" y="80" width="90" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-parser" value="Parser" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="390" y="80" width="70" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-retriever" value="Retriever" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="490" y="80" width="80" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-vectordb" value="VectorDB" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="600" y="80" width="80" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-matcher" value="Matcher" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="710" y="80" width="80" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-llm" value="LLM" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="820" y="80" width="70" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-validator" value="Validator" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="920" y="80" width="80" height="660" as="geometry" />
+        </mxCell>
+        <mxCell id="participant-ehr" value="EHR" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1030" y="80" width="70" height="660" as="geometry" />
+        </mxCell>
+        <!-- Messages -->
+        <mxCell id="msg-1" value="1: POST /process-report" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-clinician" target="participant-api">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="130" y="170" as="sourcePoint" />
+            <mxPoint x="180" y="120" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-2" value="2: process_report()" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-api" target="participant-orchestrator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="240" y="200" as="sourcePoint" />
+            <mxPoint x="290" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="note-init" value="Initialize AgentState&lt;br&gt;session_id = UUID" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=9;align=left;" vertex="1" parent="1">
+          <mxGeometry x="370" y="200" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="msg-3" value="3: parse_report_tool()" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-orchestrator" target="participant-parser">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="260" as="sourcePoint" />
+            <mxPoint x="410" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-3-return" value="findings[]" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-parser" target="participant-orchestrator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="425" y="290" as="sourcePoint" />
+            <mxPoint x="315" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="time-parse" value="~100ms" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#CC0000;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="390" y="290" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="loop-findings" value="FOR EACH finding" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#4CAF50;fontSize=10;fontStyle=1;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="260" y="320" width="850" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="msg-4" value="4: retrieve_guidelines_tool()" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-orchestrator" target="participant-retriever">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="350" as="sourcePoint" />
+            <mxPoint x="410" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-5" value="5: hybrid_search(embedding, query)" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-retriever" target="participant-vectordb">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="570" y="380" as="sourcePoint" />
+            <mxPoint x="620" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-5-return" value="top-5 chunks" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-vectordb" target="participant-retriever">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="640" y="410" as="sourcePoint" />
+            <mxPoint x="530" y="410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="time-retrieve" value="~500ms" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#CC0000;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="605" y="410" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="msg-4-return" value="guidelines[]" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-retriever" target="participant-orchestrator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="530" y="440" as="sourcePoint" />
+            <mxPoint x="315" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-6" value="6: match_recommendation_tool()" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-orchestrator" target="participant-matcher">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="470" as="sourcePoint" />
+            <mxPoint x="710" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="note-llm-prompt" value="Build prompt:&lt;br&gt;finding + guidelines +&lt;br&gt;patient_context" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=9;align=left;" vertex="1" parent="1">
+          <mxGeometry x="680" y="490" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="msg-7" value="7: generate_json(prompt, schema)" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-matcher" target="participant-llm">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="790" y="550" as="sourcePoint" />
+            <mxPoint x="840" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-7-return" value="JSON recommendation" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-llm" target="participant-matcher">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="855" y="580" as="sourcePoint" />
+            <mxPoint x="750" y="580" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="time-llm" value="~2-4s" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#CC0000;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="820" y="580" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="msg-6-return" value="recommendation" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-matcher" target="participant-orchestrator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="750" y="610" as="sourcePoint" />
+            <mxPoint x="315" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-8" value="8: validate_safety_tool()" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-orchestrator" target="participant-validator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="640" as="sourcePoint" />
+            <mxPoint x="920" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="note-safety" value="Check: size &gt; 30mm,&lt;br&gt;spiculated, urgency,&lt;br&gt;missing citation" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFE6E6;strokeColor=#CC0000;fontSize=9;align=left;" vertex="1" parent="1">
+          <mxGeometry x="900" y="600" width="120" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="msg-8-return" value="is_safe, concerns[]" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-validator" target="participant-orchestrator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="960" y="640" as="sourcePoint" />
+            <mxPoint x="315" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="time-validate" value="~50ms" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#CC0000;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="935" y="640" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="alt-safe" value="[IF is_safe]" style="shape=umlFrame;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=9;fontStyle=1;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="260" y="670" width="850" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="msg-9" value="9: generate_task_tool() → create_service_request()" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;fontSize=10;" edge="1" parent="1" source="participant-orchestrator" target="participant-ehr">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="700" as="sourcePoint" />
+            <mxPoint x="1030" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-9-return" value="order_id" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-ehr" target="participant-orchestrator">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1065" y="710" as="sourcePoint" />
+            <mxPoint x="315" y="710" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="time-generate" value="~200ms" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontColor=#CC0000;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="1040" y="710" width="50" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="msg-10-return" value="10: ProcessingResult" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-orchestrator" target="participant-api">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="315" y="750" as="sourcePoint" />
+            <mxPoint x="200" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg-11-return" value="11: JSON response" style="endArrow=open;html=1;rounded=0;strokeWidth=2;dashed=1;fontSize=10;endFill=0;" edge="1" parent="1" source="participant-api" target="participant-clinician">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="200" y="760" as="sourcePoint" />
+            <mxPoint x="90" y="760" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Total timing -->
+        <mxCell id="total-time" value="&lt;b&gt;TOTAL TIME: 3-5 seconds&lt;/b&gt;&lt;br&gt;(Parse: 100ms + Retrieve: 500ms + Match: 2-4s + Validate: 50ms + Generate: 200ms)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#D32F2F;strokeWidth=2;align=center;verticalAlign=middle;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="320" y="760" width="520" height="50" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="AWS Deployment" id="deployment">
+    <mxGraphModel dx="1434" dy="796" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <!-- Title -->
+        <mxCell id="title-4" value="AWS Cloud Deployment Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="320" y="20" width="520" height="40" as="geometry" />
+        </mxCell>
+        <!-- Internet -->
+        <mxCell id="internet" value="Internet" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;fontSize=12;fontStyle=1;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="120" height="80" as="geometry" />
+        </mxCell>
+        <!-- VPC -->
+        <mxCell id="vpc" value="VPC (us-west-2)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=14;fontStyle=1;align=left;verticalAlign=top;dashed=1;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="240" y="80" width="880" height="680" as="geometry" />
+        </mxCell>
+        <!-- ALB -->
+        <mxCell id="alb" value="&lt;b&gt;Application Load Balancer&lt;/b&gt;&lt;br&gt;(ALB)&lt;br&gt;&lt;br&gt;TLS 1.3 termination&lt;br&gt;Health checks: /health&lt;br&gt;Target: EKS pods" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=11;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="120" width="180" height="100" as="geometry" />
+        </mxCell>
+        <!-- EKS Cluster -->
+        <mxCell id="eks" value="EKS Cluster (v1.28+)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;fontSize=13;fontStyle=1;align=left;verticalAlign=top;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="280" y="260" width="580" height="320" as="geometry" />
+        </mxCell>
+        <!-- API Pods -->
+        <mxCell id="api-pods" value="&lt;b&gt;API Pods&lt;/b&gt;&lt;br&gt;(FastAPI + Agent)&lt;br&gt;&lt;br&gt;• Replicas: 2-10 (HPA)&lt;br&gt;• CPU: 2 vCPU&lt;br&gt;• Memory: 4 GB&lt;br&gt;• Instance: t3.medium&lt;br&gt;• Max concurrency: 100/pod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;fontSize=10;align=left;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="320" y="300" width="160" height="150" as="geometry" />
+        </mxCell>
+        <!-- NIM LLM Pods -->
+        <mxCell id="nim-llm-pods" value="&lt;b&gt;NIM LLM Pods&lt;/b&gt;&lt;br&gt;(Nemotron-4 70B)&lt;br&gt;&lt;br&gt;• Replicas: 1-2&lt;br&gt;• GPU: 1x A10G (24GB)&lt;br&gt;• Instance: g5.4xlarge&lt;br&gt;• Throughput: 50 req/min&lt;br&gt;• Latency: 2-4s p50" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;fontSize=10;align=left;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="510" y="300" width="160" height="150" as="geometry" />
+        </mxCell>
+        <!-- NIM Embed Pods -->
+        <mxCell id="nim-embed-pods" value="&lt;b&gt;NIM Embed Pods&lt;/b&gt;&lt;br&gt;(NVEmbed-v2)&lt;br&gt;&lt;br&gt;• Replicas: 1&lt;br&gt;• GPU: 1x A10G (24GB)&lt;br&gt;• Instance: g5.xlarge&lt;br&gt;• Batch: 32 texts&lt;br&gt;• Cache: LRU 1024 entries" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C2185B;fontSize=10;align=left;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="680" y="300" width="160" height="150" as="geometry" />
+        </mxCell>
+        <!-- Frontend Pod -->
+        <mxCell id="frontend-pod" value="&lt;b&gt;Frontend Pod&lt;/b&gt;&lt;br&gt;(React Static)&lt;br&gt;&lt;br&gt;• Replicas: 2&lt;br&gt;• Nginx serving&lt;br&gt;• Instance: t3.small" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;fontSize=10;align=left;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="320" y="470" width="160" height="90" as="geometry" />
+        </mxCell>
+        <!-- Observability -->
+        <mxCell id="observability" value="&lt;b&gt;Observability&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Prometheus&lt;br&gt;• Grafana&lt;br&gt;• Jaeger (traces)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=10;align=left;verticalAlign=top;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="510" y="470" width="160" height="90" as="geometry" />
+        </mxCell>
+        <!-- OpenSearch -->
+        <mxCell id="opensearch" value="&lt;b&gt;OpenSearch Serverless&lt;/b&gt;&lt;br&gt;(Vector Database)&lt;br&gt;&lt;br&gt;• Index: medical_guidelines&lt;br&gt;• Embeddings: 768-dim&lt;br&gt;• Documents: ~10k chunks&lt;br&gt;• Engine: HNSW + BM25&lt;br&gt;• Latency: &lt;500ms p95&lt;br&gt;• Cost: ~$400/month" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=10;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="900" y="120" width="180" height="160" as="geometry" />
+        </mxCell>
+        <!-- ElastiCache -->
+        <mxCell id="elasticache" value="&lt;b&gt;ElastiCache Redis&lt;/b&gt;&lt;br&gt;(Session Store)&lt;br&gt;&lt;br&gt;• Instance: cache.t3.micro&lt;br&gt;• Mode: Cluster disabled&lt;br&gt;• Storage: AgentState cache&lt;br&gt;• TTL: 24 hours&lt;br&gt;• Cost: ~$15/month" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=10;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="900" y="310" width="180" height="150" as="geometry" />
+        </mxCell>
+        <!-- S3 -->
+        <mxCell id="s3" value="&lt;b&gt;S3 Buckets&lt;/b&gt;&lt;br&gt;&lt;br&gt;• medical-guidelines/&lt;br&gt;  (markdown sources)&lt;br&gt;• audit-logs/&lt;br&gt;  (decision traces)&lt;br&gt;• model-artifacts/&lt;br&gt;&lt;br&gt;Cost: ~$5/month" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E1F5FE;strokeColor=#0288D1;fontSize=10;align=left;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="900" y="490" width="180" height="150" as="geometry" />
+        </mxCell>
+        <!-- CloudWatch -->
+        <mxCell id="cloudwatch" value="&lt;b&gt;CloudWatch&lt;/b&gt;&lt;br&gt;&lt;br&gt;• Logs aggregation&lt;br&gt;• Metrics: latency, errors&lt;br&gt;• Alarms: p99 &gt; 8s&lt;br&gt;• Retention: 30 days&lt;br&gt;• Cost: ~$50/month" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontSize=10;align=left;verticalAlign=top;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="900" y="670" width="180" height="70" as="geometry" />
+        </mxCell>
+        <!-- NAT Gateway -->
+        <mxCell id="nat" value="&lt;b&gt;NAT Gateway&lt;/b&gt;&lt;br&gt;&lt;br&gt;Outbound traffic&lt;br&gt;to NIM API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#F57C00;fontSize=10;align=center;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="280" y="620" width="140" height="80" as="geometry" />
+        </mxCell>
+        <!-- Connections -->
+        <mxCell id="conn-internet-alb" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=3;strokeColor=#1976D2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="internet" target="alb">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="200" y="140" as="sourcePoint" />
+            <mxPoint x="250" y="90" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-internet-alb-label" value="HTTPS (443)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;fontStyle=1;fontColor=#1976D2;backgroundColor=#E3F2FD;" vertex="1" connectable="0" parent="conn-internet-alb">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint y="-12" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-alb-api" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388E3C;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="alb" target="api-pods">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="370" y="230" as="sourcePoint" />
+            <mxPoint x="400" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-alb-api-label" value="HTTP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=10;fontStyle=1;fontColor=#388E3C;backgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="conn-alb-api">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint x="15" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-nim-llm" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#C2185B;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="api-pods" target="nim-llm-pods">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="338" as="sourcePoint" />
+            <mxPoint x="510" y="338" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-nim-llm-label" value="gRPC" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#C2185B;backgroundColor=#FCE4EC;" vertex="1" connectable="0" parent="conn-api-nim-llm">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-nim-embed" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#C2185B;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api-pods" target="nim-embed-pods">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="375" as="sourcePoint" />
+            <mxPoint x="680" y="375" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-nim-embed-label" value="HTTP" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#C2185B;backgroundColor=#FCE4EC;" vertex="1" connectable="0" parent="conn-api-nim-embed">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-opensearch" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0288D1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="api-pods" target="opensearch">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="412" as="sourcePoint" />
+            <mxPoint x="890" y="200" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="850" y="413" />
+              <mxPoint x="850" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-opensearch-label" value="HTTPS mTLS" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#0288D1;backgroundColor=#E1F5FE;" vertex="1" connectable="0" parent="conn-api-opensearch">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint x="10" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-redis" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0288D1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="api-pods" target="elasticache">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="450" as="sourcePoint" />
+            <mxPoint x="890" y="385" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="870" y="450" />
+              <mxPoint x="870" y="385" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-redis-label" value="Redis" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#0288D1;backgroundColor=#E1F5FE;" vertex="1" connectable="0" parent="conn-api-redis">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint x="10" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-observability-cloudwatch" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#F9A825;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="observability" target="cloudwatch">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="670" y="515" as="sourcePoint" />
+            <mxPoint x="890" y="705" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="850" y="515" />
+              <mxPoint x="850" y="705" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-observability-cloudwatch-label" value="CloudWatch API" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#F9A825;backgroundColor=#FFF9C4;" vertex="1" connectable="0" parent="conn-observability-cloudwatch">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint x="10" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-s3" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#0288D1;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="api-pods" target="s3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="460" as="sourcePoint" />
+            <mxPoint x="890" y="565" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="400" y="565" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-api-s3-label" value="S3 API (audit logs)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#0288D1;backgroundColor=#E1F5FE;" vertex="1" connectable="0" parent="conn-api-s3">
+          <mxGeometry x="0.1" relative="1" as="geometry">
+            <mxPoint x="50" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-alb-frontend" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;strokeColor=#388E3C;dashed=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="alb" target="frontend-pod">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="325" y="230" as="sourcePoint" />
+            <mxPoint x="400" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="conn-alb-frontend-label" value="Static assets" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=9;fontStyle=1;fontColor=#388E3C;backgroundColor=#E8F5E9;" vertex="1" connectable="0" parent="conn-alb-frontend">
+          <mxGeometry x="-0.1" relative="1" as="geometry">
+            <mxPoint x="-20" y="5" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <!-- Cost and Performance -->
+        <mxCell id="cost-box" value="&lt;b&gt;Estimated Monthly Cost:&lt;/b&gt;&lt;br&gt;• EKS Control Plane: $70&lt;br&gt;• API Pods (t3.medium x2): $60&lt;br&gt;• NIM LLM (g5.4xlarge x1): $800&lt;br&gt;• NIM Embed (g5.xlarge x1): $250&lt;br&gt;• OpenSearch Serverless: $400&lt;br&gt;• ElastiCache: $15&lt;br&gt;• S3 + CloudWatch + Data: $100&lt;br&gt;• NAT Gateway: $50&lt;br&gt;&lt;b&gt;TOTAL: ~$1,745/month&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#C62828;strokeWidth=2;align=left;verticalAlign=top;fontSize=10;fontStyle=0" vertex="1" parent="1">
+          <mxGeometry x="50" y="240" width="180" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="perf-box" value="&lt;b&gt;Performance Targets:&lt;/b&gt;&lt;br&gt;• Latency p50: &lt;3s&lt;br&gt;• Latency p95: &lt;5s&lt;br&gt;• Latency p99: &lt;8s&lt;br&gt;• Throughput: 50 reports/min&lt;br&gt;• Availability: 99.9% SLA&lt;br&gt;• Auto-scaling: 2-10 API pods&lt;br&gt;• Health checks: every 30s" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;strokeWidth=2;align=left;verticalAlign=top;fontSize=10;fontStyle=0" vertex="1" parent="1">
+          <mxGeometry x="50" y="460" width="180" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="security-box" value="&lt;b&gt;Security:&lt;/b&gt;&lt;br&gt;• TLS 1.3 end-to-end&lt;br&gt;• mTLS for OpenSearch&lt;br&gt;• Private subnets for pods&lt;br&gt;• Security groups: strict egress&lt;br&gt;• IAM roles for IRSA&lt;br&gt;• KMS encryption at rest" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1F5FE;strokeColor=#0288D1;strokeWidth=2;align=left;verticalAlign=top;fontSize=10;fontStyle=0" vertex="1" parent="1">
+          <mxGeometry x="50" y="640" width="180" height="120" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
